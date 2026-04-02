@@ -1,0 +1,5 @@
+package net.phiro.serverlist;
+
+// This is a bridge class to ensure LanguageManager is available
+// The actual implementation is in the common module
+// This file exists only for compilation purposes - the real class comes from common JAR

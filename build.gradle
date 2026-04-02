@@ -1,0 +1,121 @@
+plugins {
+    id 'fabric-loom' version '1.13-SNAPSHOT' apply false
+}
+
+// Configuration for Minecraft versions to Yarn mappings
+def mcToYarn = [
+    '1.21.11': '1.21.11+build.1:v2',
+    '1.21.1' : '1.21.1+build.1:v2',
+    '1.21'   : '1.21+build.1:v2',
+    '1.20.6' : '1.20.6+build.1:v2',
+    '1.20.1' : '1.20.1+build.1:v2',
+    '1.20'   : '1.20+build.1:v2',
+    '1.19.4' : '1.19.4+build.2:v2',
+    '1.19.2' : '1.19.2+build.1:v2',
+    '1.19'   : '1.19+build.1:v2',
+    '1.18.2' : '1.18.2+build.3:v2'
+]
+
+// Java version requirements for each Minecraft version
+def mcToJavaVersion = [
+    '1.21.11': 21,
+    '1.21.1' : 21,
+    '1.21'   : 21,
+    '1.20.6' : 17,
+    '1.20.1' : 17,
+    '1.20'   : 17,
+    '1.19.4' : 17,
+    '1.19.2' : 17,
+    '1.19'   : 17,
+    '1.18.2' : 17
+]
+
+// Determine which version we are targeting.
+def targetMc = project.hasProperty('mc') ? project.getProperty('mc') : '1.21.11'
+def targetSubproject = "v" + (targetMc.split('\\.')[0] + '_' + targetMc.split('\\.')[1])
+
+allprojects {
+    apply plugin: 'java'
+
+    group 'net.phiro'
+    version '1.2.0'
+
+    repositories {
+        maven { url "https://maven.fabricmc.net/" }
+        mavenCentral()
+    }
+
+    tasks.withType(JavaCompile).configureEach {
+        it.options.encoding = "UTF-8"
+        def requiredJavaVersion = mcToJavaVersion[targetMc] ?: 17
+        it.options.release = requiredJavaVersion
+    }
+}
+
+subprojects {
+    if (project.name == 'common' || project.name == targetSubproject) {
+        apply plugin: 'fabric-loom'
+        
+        def targetYarn = mcToYarn[targetMc] ?: "1.21.1+build.1:v2"
+
+        dependencies {
+            if (project.name != 'common') {
+                implementation project(':common')
+            }
+            minecraft "com.mojang:minecraft:${targetMc}"
+            mappings "net.fabricmc:yarn:${targetYarn}"
+            def loaderVer = targetMc == "1.21.11" ? "0.17.3" : "0.16.0"
+            modImplementation "net.fabricmc:fabric-loader:${loaderVer}"
+            
+            // Use intermediary mappings for development to avoid access widener issues
+            loom {
+                runs {
+                    client {
+                        client()
+                        ideConfigGenerated(true)
+                        vmArg("-Dfabric-api.development=true")
+                        property("fabric.mapping.namespace", "intermediary")
+                    }
+                }
+            }
+            
+            if (targetMc == "1.21.11") {
+                modImplementation "net.fabricmc.fabric-api:fabric-api:0.141.3+1.21.11"
+            } else if (targetMc.startsWith("1.21")) {
+                modImplementation "net.fabricmc.fabric-api:fabric-api:0.102.1+1.21.1"
+            } else if (targetMc.startsWith("1.20")) {
+                modImplementation "net.fabricmc.fabric-api:fabric-api:0.100.1+1.20.6"
+            } else if (targetMc.startsWith("1.19")) {
+                modImplementation "net.fabricmc.fabric-api:fabric-api:0.83.0+1.19.4"
+            } else if (targetMc.startsWith("1.18")) {
+                modImplementation "net.fabricmc.fabric-api:fabric-api:0.77.0+1.18.2"
+            }
+        }
+
+        processResources {
+            inputs.property "version", project.version
+            filesMatching("fabric.mod.json") { expand "version": project.version }
+        }
+    } else {
+        tasks.configureEach { enabled = false }
+    }
+}
+    
+
+
+
+// Global launch task
+// Usage: ./gradlew runClient -Pmc=1.21.2
+task runClient(type: Exec) {
+    def version = project.hasProperty('mc') ? project.getProperty('mc') : '1.21.11'
+    def major = (version.split('\\.')[0] + '.' + version.split('\\.')[1])
+    def target = ':v' + major.replace('.', '_')
+    
+    doFirst {
+        println "Launching Minecraft ${version} from project ${target}..."
+    }
+    
+    workingDir project.projectDir
+    commandLine './gradlew', "${target}:runClient", "-Pmc=${version}"
+}
+    

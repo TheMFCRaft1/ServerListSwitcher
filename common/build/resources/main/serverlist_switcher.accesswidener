@@ -1,0 +1,10 @@
+accessWidener v2 intermediary
+
+# Access widener for Server List Switcher mod
+# This file allows the mod to access private Minecraft classes and methods
+
+# Access to private fields in MultiplayerServerListWidget  
+accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget servers Ljava/util/List;
+
+# Access to private fields in ServerEntry
+accessible field net/minecraft/client/gui/screen/multiplayer/MultiplayerServerListWidget$ServerEntry server Lnet/minecraft/client/network/ServerInfo;

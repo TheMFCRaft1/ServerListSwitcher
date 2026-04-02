@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.phiro.serverlist.v1_19.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": [
+    "MultiplayerScreenMixin",
+    "ServerEntryMixin",
+    "MultiplayerServerListWidgetMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

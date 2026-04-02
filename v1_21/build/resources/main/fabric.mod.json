@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "id": "serverlist-switcher",
+  "version": "1.2.0",
+  "name": "Server List Switcher",
+  "description": "Easily organize your server list with categories and pages.",
+  "authors": [
+    "PhiroStudios"
+  ],
+  "contact": {
+    "homepage": "https://modrinth.com/mod/server-list-switcher",
+    "sources": "https://github.com/PhiroStudios/ServerListSwitcher"
+  },
+  "license": "MIT",
+  "icon": "assets/serverlist/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "net.phiro.serverlist.v1_21.ServerListSwitcherClient"
+    ]
+  },
+  "mixins": [
+    "serverlist.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": ">=1.21",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
